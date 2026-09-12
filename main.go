@@ -74,9 +74,7 @@ Templates are stored in %s.
 	}
 	parseFlags(&f, args)
 	if f.NArg() > 1 {
-		log.Println("too many arguments")
-		f.Usage()
-		os.Exit(2)
+		usageError(&f, "too many arguments")
 	}
 
 	name := f.Arg(0)
@@ -120,9 +118,11 @@ Options:
 		f.PrintDefaults()
 	}
 	parseFlags(&f, args)
-	if f.NArg() != 1 {
-		f.Usage()
-		os.Exit(2)
+	if f.NArg() == 0 {
+		usageError(&f, "missing path")
+	}
+	if f.NArg() > 1 {
+		usageError(&f, "too many arguments")
 	}
 
 	if err := addTemplate(f.Arg(0), name); err != nil {
@@ -139,9 +139,8 @@ func runList(args []string) {
 List the names of saved templates.`)
 	}
 	parseFlags(&f, args)
-	if f.NArg() != 0 {
-		f.Usage()
-		os.Exit(2)
+	if f.NArg() > 0 {
+		usageError(&f, "too many arguments")
 	}
 
 	names, err := templateNames()
@@ -162,9 +161,11 @@ func runRemove(args []string) {
 Remove the named template.`)
 	}
 	parseFlags(&f, args)
-	if f.NArg() != 1 {
-		f.Usage()
-		os.Exit(2)
+	if f.NArg() == 0 {
+		usageError(&f, "missing template")
+	}
+	if f.NArg() > 1 {
+		usageError(&f, "too many arguments")
 	}
 
 	if err := removeTemplate(f.Arg(0)); err != nil {
@@ -181,9 +182,11 @@ func runShow(args []string) {
 Show information about the named template.`)
 	}
 	parseFlags(&f, args)
-	if f.NArg() != 1 {
-		f.Usage()
-		os.Exit(2)
+	if f.NArg() == 0 {
+		usageError(&f, "missing template")
+	}
+	if f.NArg() > 1 {
+		usageError(&f, "too many arguments")
 	}
 
 	fi, err := templateByName(f.Arg(0))
@@ -234,6 +237,12 @@ func parseFlags(f *flag.FlagSet, args []string) {
 		f.Usage()
 		os.Exit(2)
 	}
+}
+
+func usageError(f *flag.FlagSet, s string) {
+	log.Println(s)
+	f.Usage()
+	os.Exit(2)
 }
 
 var errCanceled = errors.New("selection canceled")
